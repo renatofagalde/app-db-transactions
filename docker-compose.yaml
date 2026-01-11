@@ -1,0 +1,28 @@
+services:
+  db-transactions:
+    image: postgres:latest
+    command:
+      - "postgres"
+      - "-c"
+      - "log_statement=all"
+      - "-c"
+      - "log_duration=on"
+      - "-c"
+      - "log_min_duration_statement=0"
+      - "-c"
+      - "log_line_prefix=%m [%p] %u@%d "
+
+    container_name: db-transactions
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: db-transactions
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5510:5432"
+    volumes:
+      - ./sql/init:/docker-entrypoint-initdb.d
+    logging:
+      options:
+        max-size: "10m"
+        max-file: "3"
