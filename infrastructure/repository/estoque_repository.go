@@ -38,11 +38,18 @@ func (r *EstoqueRepository) GetByID(
 func (r *EstoqueRepository) AtualizarQuantidade(
 	ctx context.Context,
 	id int64,
-) error {
+	version int64,
+) (bool, error) {
 
-	return r.db.WithContext(ctx).
+	result := r.db.WithContext(ctx).
 		Table("estoque").
-		Where("id = ?", id).
-		Update("quantidade", gorm.Expr("quantidade - 1")).
-		Error
+		Where("id = ? AND version =?", id, version).
+		Updates(map[string]interface{}{
+			"quantidade": gorm.Expr("quantidade - 1"),
+			"version":    gorm.Expr("version + 1"),
+		})
+	if result.Error != nil {
+		return false, result.Error
+	}
+	return result.RowsAffected == 1, nil
 }
