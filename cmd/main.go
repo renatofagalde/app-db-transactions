@@ -5,7 +5,7 @@ import (
 	"gorm.io/gorm"
 )
 
-const connStr = "postgres://postgres:postgres@localhost:5432/postgres"
+const connStr = "postgres://user:pass@localhost:5510/db-transactions"
 
 func main() {
 	db, err := gorm.Open(postgres.Open(connStr), &gorm.Config{})
