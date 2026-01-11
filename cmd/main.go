@@ -1,6 +1,11 @@
 package main
 
 import (
+	"app-db-transactions/application/usecase"
+	"app-db-transactions/infrastructure/repository"
+	"context"
+	"sync"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -17,6 +22,23 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-
 	defer sqlDB.Close()
+
+	const n = 100
+	var wg sync.WaitGroup
+	wg.Add(n)
+
+	ctx := context.Background()
+
+	estoqueRepo := repository.NewEstoqueRepository(db)
+	comprarUseCase := usecase.NewComprarEstoqueUseCase(estoqueRepo)
+
+	for i := 0; i < n; i++ {
+		go func() {
+			defer wg.Done()
+			_ = comprarUseCase.Execute(ctx, 1)
+		}()
+	}
+
+	wg.Wait()
 }
