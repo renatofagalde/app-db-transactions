@@ -6,30 +6,44 @@ import (
 )
 
 type ComprarEstoqueUseCase struct {
-	estoqueRepo *repository.EstoqueRepository
+	estoqueRepository *repository.EstoqueRepository
 }
 
 func NewComprarEstoqueUseCase(
-	estoqueRepo *repository.EstoqueRepository,
+	estoqueRepository *repository.EstoqueRepository,
 ) *ComprarEstoqueUseCase {
 	return &ComprarEstoqueUseCase{
-		estoqueRepo: estoqueRepo,
+		estoqueRepository: estoqueRepository,
 	}
 }
 
-func (uc *ComprarEstoqueUseCase) Execute(
+func (uc *ComprarEstoqueUseCase) Vender(
 	ctx context.Context,
 	id int64,
 ) error {
 
-	estoque, err := uc.estoqueRepo.GetByID(ctx, id)
-	if err != nil {
-		return err
+	const maxTentativas = 50
+
+	for i := 0; i < maxTentativas; i++ {
+		estoque, err := uc.estoqueRepository.GetByID(ctx, id)
+		if err != nil {
+			return err
+		}
+
+		if !estoque.PodeComprar() {
+			return nil
+		}
+
+		ok, err := uc.estoqueRepository.AtualizarQuantidade(ctx, id, estoque.Version)
+		if err != nil {
+			return err
+		}
+
+		if ok {
+			return nil
+		}
+
 	}
 
-	if !estoque.PodeComprar() {
-		return nil
-	}
-
-	return uc.estoqueRepo.AtualizarQuantidade(ctx, id)
+	return nil
 }
