@@ -36,7 +36,7 @@ func main() {
 	for i := 0; i < n; i++ {
 		go func() {
 			defer wg.Done()
-			_ = comprarUseCase.Execute(ctx, 1)
+			_ = comprarUseCase.Vender(ctx, 1)
 		}()
 	}
 
