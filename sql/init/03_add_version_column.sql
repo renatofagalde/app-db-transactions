@@ -1,0 +1,1 @@
+alter table estoque add version bigint;
